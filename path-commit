@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -xe
+staged_files=$(git diff --cached --name-only)
+
+all_files=false
+# while getopts "all" opt; do
+#     case $opt in
+#         all ) all_files=true;;
+#         \? ) all_files=false;;
+#     esac
+# done
+
+for arg in "$@"; do
+    case $arg in
+        --all )all_files=true
+            shift;;
+
+    esac
+done
+
+echo $all_files
+
+for file in $staged_files; do
+    echo $file
+done
+
+exit 0
