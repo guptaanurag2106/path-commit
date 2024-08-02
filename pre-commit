@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Git for windows uses its own Windows port for bash and it interprets the shebang. However, the path to bash/sh needs to be changed.
+# Example
+# #!C:/path/to/Git/bin/sh.exe
+
 # set -x
 
 root_path=$(git rev-parse --show-toplevel)
@@ -30,10 +34,15 @@ for file in $file_list; do
     fi
 done
 
-if $found_abs_path; then
-    echo "Commit aborted due to absolute paths."
-    exit 1
+if [ ! $all_files ]; then
+    if $found_abs_path; then
+        echo "Commit aborted due to absolute paths."
+        exit 1
+    else
+        echo "No absolute paths found commit proceeding"
+        exit 0
+    fi
 else
-    echo "No absolute paths found commit proceeding"
     exit 0
 fi
+
