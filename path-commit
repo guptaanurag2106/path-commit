@@ -1,28 +1,39 @@
 #!/usr/bin/env bash
 
-set -xe
-staged_files=$(git diff --cached --name-only)
+# set -x
 
+root_path=$(git rev-parse --show-toplevel)
 all_files=false
-# while getopts "all" opt; do
-#     case $opt in
-#         all ) all_files=true;;
-#         \? ) all_files=false;;
-#     esac
-# done
 
 for arg in "$@"; do
     case $arg in
         --all )all_files=true
             shift;;
-
     esac
 done
 
-echo $all_files
+if $all_files; then
+    file_list=$(git ls-tree -r HEAD --name-only)
+else
+    file_list=$(git diff --cached --name-only)
+fi
 
-for file in $staged_files; do
-    echo $file
+found_abs_path=false
+
+for file in $file_list; do
+    if [ -f "$file" ]; then
+    matches=$(grep -nE --color=always '(["'\''`])(/[^[:space:]]+|[A-Za-z0-9._]:([/\\]|\\\\)[^[:space:]]*)\1' "$file")
+        if [ ! -z "$matches" ]; then
+            echo "$matches"
+            found_abs_path=true
+        fi
+    fi
 done
 
-exit 0
+if $found_abs_path; then
+    echo "Commit aborted due to absolute paths."
+    exit 1
+else
+    echo "No absolute paths found commit proceeding"
+    exit 0
+fi
